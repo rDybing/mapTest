@@ -2,7 +2,6 @@ package main
 
 import (
 	"crypto/sha1"
-	"encoding/json"
 	"fmt"
 	"hash"
 	"io"
@@ -15,15 +14,32 @@ type myStructT struct {
 	pets []string
 }
 
-var myMap map[string]myStructT
-
 func main() {
+	var myMap map[string]myStructT
+	myMap = make(map[string]myStructT)
 
 	rand.Seed(time.Now().UTC().UnixNano())
 	mySlice := initSlice()
 	myMap = initMap(mySlice)
-	outBytes, _ := json.MarshalIndent(myMap, "", "	")
-	fmt.Print(string(outBytes[:]))
+	printMap(myMap)
+	myMap = editMap(myMap, "Dewey")
+	fmt.Println("----- After edit -----")
+	printMap(myMap)
+}
+
+func printMap(in map[string]myStructT) {
+	for i := range in {
+		fmt.Printf("Name: %s\n", in[i].name)
+		if len(in[i].pets) > 0 {
+			fmt.Printf("Pets: %d\n", len(in[i].pets))
+			for j := range in[i].pets {
+				fmt.Printf("- %s\n", in[i].pets[j])
+			}
+		} else {
+			fmt.Println("No Pets :(")
+		}
+		fmt.Println("----------")
+	}
 }
 
 func initSlice() []myStructT {
@@ -37,13 +53,10 @@ func initSlice() []myStructT {
 		s.name = name[i]
 		s.pets = nil
 		x := randInt(0, 3)
-		fmt.Printf("Name  : %s X: %d\n", s.name, x)
 		for j := 0; j < x; j++ {
 			y := randInt(0, 5)
 			s.pets = append(s.pets, pets[y])
-			fmt.Printf("Pet %d : %s\n", j+1, s.pets[j])
 		}
-		fmt.Println("---")
 		out = append(out, s)
 	}
 	return out
@@ -62,9 +75,25 @@ func initMap(in []myStructT) map[string]myStructT {
 		hash = fmt.Sprintf("%x", h.Sum(nil))
 		s = in[i]
 		out[hash] = s
-		fmt.Println(out[hash])
 	}
 	return out
+}
+
+func editMap(in map[string]myStructT, index string) map[string]myStructT {
+	var h hash.Hash
+	var hash string
+	var old myStructT
+
+	h = sha1.New()
+	io.WriteString(h, index)
+	hash = fmt.Sprintf("%x", h.Sum(nil))
+
+	newPet := "Alligator"
+	old = in[hash]
+	delete(in, hash)
+	old.pets = append(old.pets, newPet)
+	in[hash] = old
+	return in
 }
 
 func randInt(min int, max int) int {
