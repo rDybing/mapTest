@@ -27,6 +27,22 @@ func main() {
 	printMap(myMap)
 }
 
+func editMap(in map[string]myStructT, index string) map[string]myStructT {
+	var h hash.Hash
+	var hash string
+	var old myStructT
+
+	h = sha1.New()
+	io.WriteString(h, index)
+	hash = fmt.Sprintf("%x", h.Sum(nil))
+
+	old = in[hash]
+	delete(in, hash)
+	old.pets = append(old.pets, "Alligator")
+	in[hash] = old
+	return in
+}
+
 func printMap(in map[string]myStructT) {
 	for i := range in {
 		fmt.Printf("Name: %s\n", in[i].name)
@@ -54,7 +70,7 @@ func initSlice() []myStructT {
 		s.pets = nil
 		x := randInt(0, 3)
 		for j := 0; j < x; j++ {
-			y := randInt(0, 5)
+			y := randInt(0, 6)
 			s.pets = append(s.pets, pets[y])
 		}
 		out = append(out, s)
@@ -77,23 +93,6 @@ func initMap(in []myStructT) map[string]myStructT {
 		out[hash] = s
 	}
 	return out
-}
-
-func editMap(in map[string]myStructT, index string) map[string]myStructT {
-	var h hash.Hash
-	var hash string
-	var old myStructT
-
-	h = sha1.New()
-	io.WriteString(h, index)
-	hash = fmt.Sprintf("%x", h.Sum(nil))
-
-	newPet := "Alligator"
-	old = in[hash]
-	delete(in, hash)
-	old.pets = append(old.pets, newPet)
-	in[hash] = old
-	return in
 }
 
 func randInt(min int, max int) int {
